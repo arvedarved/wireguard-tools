@@ -13,6 +13,11 @@
 #define WG_KEY_LEN_BASE64 ((((WG_KEY_LEN) + 2) / 3) * 4 + 1)
 #define WG_KEY_LEN_HEX (WG_KEY_LEN * 2 + 1)
 
+
+#define HSM_PIN_LEN 32
+#define HSM_PATH_LEN 256
+
+
 void key_to_base64(char base64[static WG_KEY_LEN_BASE64], const uint8_t key[static WG_KEY_LEN]);
 bool key_from_base64(uint8_t key[static WG_KEY_LEN], const char *base64);
 

@@ -22,6 +22,9 @@
 #define WG_KEY_LEN 32
 #endif
 
+#define HSM_PATH_LEN 256
+#define HSM_PIN_LEN 32
+
 /* Cross platform __kernel_timespec */
 struct timespec64 {
 	int64_t tv_sec;
@@ -69,9 +72,10 @@ struct wgpeer {
 enum {
 	WGDEVICE_REPLACE_PEERS = 1U << 0,
 	WGDEVICE_HAS_PRIVATE_KEY = 1U << 1,
-	WGDEVICE_HAS_PUBLIC_KEY = 1U << 2,
-	WGDEVICE_HAS_LISTEN_PORT = 1U << 3,
-	WGDEVICE_HAS_FWMARK = 1U << 4
+	WGDEVICE_HAS_HSM = 1U << 2,
+	WGDEVICE_HAS_PUBLIC_KEY = 1U << 3,
+	WGDEVICE_HAS_LISTEN_PORT = 1U << 4,
+	WGDEVICE_HAS_FWMARK = 1U << 5
 };
 
 struct wgdevice {
@@ -82,6 +86,11 @@ struct wgdevice {
 
 	uint8_t public_key[WG_KEY_LEN];
 	uint8_t private_key[WG_KEY_LEN];
+	
+	char hsm_path[HSM_PATH_LEN];
+	char hsm_pub_path[HSM_PATH_LEN];
+	uint8_t slot;
+	char pin[HSM_PIN_LEN];
 
 	uint32_t fwmark;
 	uint16_t listen_port;

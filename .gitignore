@@ -1,3 +1,5 @@
+.vscode
+.vscode/
 cscope.out
 *.o
 *.d
