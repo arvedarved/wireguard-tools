@@ -193,16 +193,6 @@ static bool parse_hsmline(char * hsm_path, uint8_t * slot, char *pin, char *valu
 	return true;
 }
 
-// TODO fix these hacks and make them verify each parameter
-static bool parse_hsm_pubkey_path(char * hsm_pub_path, char *value)
-{
- 	char * pch;
-  	//printf ("Splitting string \"%s\" into tokens:\n",value);
-  	pch = strtok (value,"\0");
-	strncpy(hsm_pub_path, pch, HSM_PATH_LEN);
-	return true;
-}
-
 static inline bool parse_ip(struct wgallowedip *allowedip, const char *value)
 {
 	allowedip->family = AF_UNSPEC;
@@ -502,13 +492,6 @@ static bool process_line(struct config_ctx *ctx, const char *line)
 		if (ret) {
 			printf("Ret Good!\n");
 			ctx->device->flags |= WGDEVICE_HAS_HSM;
-			}
-		}
-		else if (key_match("PubkeyPath")) {
-			ret = parse_hsm_pubkey_path(&ctx->device->hsm_pub_path, value);
-		if (ret) {
-			printf("Ret Good!\n");
-			ctx->device->flags |= WGDEVICE_HAS_PUBLIC_KEY;
 			}
 		} else
 			goto error;

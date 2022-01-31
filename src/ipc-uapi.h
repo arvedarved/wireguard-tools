@@ -47,14 +47,10 @@ static int userspace_set_device(struct wgdevice *dev)
 	}
 	if (WGDEVICE_HAS_HSM){
 		printf("Trying to set HSM\n");
-		fprintf(f, "hsm_path=%s\n", dev->hsm_path);
-		fprintf(f, "hsm_slot=%d\n", dev->slot);
-		fprintf(f, "hsm_pin=%s\n", dev->pin);
+		//printf("hsm_path=%s\n", dev->hsm_path,dev->slot,dev->pin);
+		
+		fprintf(f, "HSM=%s,%d,%s,\n", dev->hsm_path,dev->slot,dev->pin);
 	}
-	if (WGDEVICE_HAS_PUBLIC_KEY){
-		fprintf(f, "hsm_pub_path=%s\n", dev->hsm_pub_path);
-	}
-
 	if (dev->flags & WGDEVICE_HAS_LISTEN_PORT)
 		fprintf(f, "listen_port=%u\n", dev->listen_port);
 	if (dev->flags & WGDEVICE_HAS_FWMARK)
