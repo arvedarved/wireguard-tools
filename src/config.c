@@ -157,38 +157,29 @@ out:
 	return ret;
 }
 
-// TODO add path parsing and variable parsing for setting up the HSM
-// make sure the library path exists? Or handle in PKclient
-// make sure uint value is passed in for the slot as well as the pin
-// HSM = {/path/to/file} {slotID} {PIN}
+// expected config file format for setting up the hsm:
+// hsm = {/path/to/file} {slotID} {PIN}
+// hsm = /usr/lib/pkcs11/opensc-pkcs11.so, 0, 123456
 static inline bool parse_hsm(const char *value)
 {
-
-//	if (!key_from_base64(key, value)) {
-//		fprintf(stderr, "HSM Error: `%s'\n", value);
-//		memset(key, 0, WG_KEY_LEN);
-//		return false;
-//	}
-	return true;
+	if (value != NULL) {
+		return true;
+	}
+	return false;
 }
 
 // TODO fix these hacks and make them verify each parameter
-static bool parse_hsmline(char * hsm_path, uint8_t * slot, char *pin, char *value)
+static bool parse_hsmline(char hsm_path[HSM_PATH_LEN], uint8_t slot, char pin[HSM_PIN_LEN], const char *value)
 {
  	char * pch;
   	//printf ("Splitting string \"%s\" into tokens:\n",value);
   	pch = strtok (value,",");
-	strncpy(hsm_path, pch, HSM_PATH_LEN);
+	strncpy((char*)hsm_path, pch, HSM_PATH_LEN-1);
 	pch = strtok (NULL, ",");
-	*slot = atoi(pch);
+	slot = atoi(pch);
 	pch = strtok (NULL, ",");
-	strncpy(pin, pch, HSM_PIN_LEN);
+	strncpy(pin, pch, HSM_PIN_LEN-1);
 	pch = strtok (NULL, ",");
-
-	printf("hsm_line debugging\n");
-	printf("path:%s\n", hsm_path);
-	printf("pin:%s\n", pin);
-	printf("slot:%X\n", *slot);
 
 	return true;
 }
@@ -487,11 +478,10 @@ static bool process_line(struct config_ctx *ctx, const char *line)
 			if (ret)
 				ctx->device->flags |= WGDEVICE_HAS_PRIVATE_KEY;
 		}
-		else if (key_match("HSM")) {
-			ret = parse_hsmline(&ctx->device->hsm_path, &ctx->device->slot, &ctx->device->pin, value);
-		if (ret) {
-			printf("Ret Good!\n");
-			ctx->device->flags |= WGDEVICE_HAS_HSM;
+		else if (key_match("hsm")) {
+			ret = parse_hsmline(ctx->device->hsm_path, ctx->device->slot, ctx->device->pin, value);
+			if (ret) {
+				ctx->device->flags |= WGDEVICE_HAS_HSM;
 			}
 		} else
 			goto error;
@@ -566,7 +556,7 @@ bool config_read_init(struct config_ctx *ctx, bool append)
 		return false;
 	}
 	if (!append)
-		ctx->device->flags |= WGDEVICE_REPLACE_PEERS | WGDEVICE_HAS_PRIVATE_KEY | WGDEVICE_HAS_HSM | WGDEVICE_HAS_FWMARK | WGDEVICE_HAS_LISTEN_PORT;
+		ctx->device->flags |= WGDEVICE_REPLACE_PEERS | WGDEVICE_HAS_PRIVATE_KEY | WGDEVICE_HAS_FWMARK | WGDEVICE_HAS_LISTEN_PORT;
 	return true;
 }
 
@@ -626,14 +616,12 @@ struct wgdevice *config_read_cmd(const char *argv[], int argc)
 			argv += 2;
 			argc -= 2;
 		} else if (!strcmp(argv[0], "private-key") && argc >= 2 && !peer) {
-			printf("Passing in PK!");
 			if (!parse_keyfile(device->private_key, argv[1]))
 				goto error;
 			device->flags |= WGDEVICE_HAS_PRIVATE_KEY;
 			argv += 2;
 			argc -= 2;
 		} else if (!strcmp(argv[0], "hsm") && argc >= 2 && !peer) {
-			printf("Passing in HSM!");
 			if (!parse_hsmline(device->hsm_path, device->slot, device->pin, argv[1]))
 				goto error;
 			device->flags |= WGDEVICE_HAS_HSM;
