@@ -13,8 +13,11 @@ Android.
 
 This project has been modified to enable passing 'hsm configuration' to the wireguard system process.
 The addition is a line within the [Interface] section begins with HSM
-	$ /path/to/pkcs11_library_module slot pin
-	$ /path/to/pkcs11_library_module slot 
+
+## config file
+
+	HSM /path/to/pkcs11_library_module slot pin
+	HSM /path/to/pkcs11_library_module slot 
 
 Users can choose to omit their pin in the configuration file and once configured, WireGuard will prompt for the pin
 
