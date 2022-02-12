@@ -157,53 +157,39 @@ out:
 	return ret;
 }
 
-// expected config file format for setting up the hsm:
+// TODO fix these hacks and make them verify each parameter
 // hsm = {/path/to/file} {slotID} {PIN}
 // hsm = /usr/lib/pkcs11/opensc-pkcs11.so, 0, 123456
 // optionally, omit the pin
-static inline bool parse_hsm(const char *value)
-{
-	if (value != NULL) {
-		return true;
-	}
-	return false;
-}
-
-// TODO fix these hacks and make them verify each parameter
 static bool parse_hsmline(char hsm_path[HSM_PATH_LEN], uint8_t slot, char pin[HSM_PIN_LEN], const char *value)
 {
  	char * val;
 	int llen = HSM_PATH_LEN + sizeof(slot) + HSM_PIN_LEN;
-	char hsmcfg_line[llen]; // +2 for slot and \n
+	char hsmcfg_line[llen]; 
 	 
 	strncpy((char *)hsmcfg_line, value, llen-1);
 
   	val = strtok (hsmcfg_line,",");	
 	if (val != NULL) {
+		strncpy((char*)hsm_path, val, HSM_PATH_LEN-1);
+	} else {
+		return false;
+	}
 
-	strncpy((char*)hsm_path, val, HSM_PATH_LEN-1);
+	val = strtok (NULL, ",");
+	if (val != NULL) {
+		slot = atoi(val);
 	} else {
 		return false;
 	}
 	val = strtok (NULL, ",");
 	if (val != NULL) {
-	slot = atoi(val);
+		strncpy(pin, val, HSM_PIN_LEN-1);
 	} else {
-		return false;
-	}
-	val = strtok (NULL, ",");
-	if (val != NULL) {
-	strncpy(pin, val, HSM_PIN_LEN-1);
-	printf("set pin:%s\n", pin);
-	} else {
-		// user didn't include pin
+		// user didn't include pin, ask for it
 		*pin = 'A';
 	}
-	printf("hsm_line debugging\n");
-	printf("pin:%s\n", pin);
 	
-	printf("slot:%X\n", slot);
-
 	return true;
 }
 
