@@ -173,10 +173,10 @@ static inline bool parse_hsm(const char *value)
 static bool parse_hsmline(char hsm_path[HSM_PATH_LEN], uint8_t slot, char pin[HSM_PIN_LEN], const char *value)
 {
  	char * val;
-	int llen = HSM_PATH_LEN + sizeof(slot) + HSM_PIN_LEN+1;
+	int llen = HSM_PATH_LEN + sizeof(slot) + HSM_PIN_LEN;
 	char hsmcfg_line[llen]; // +2 for slot and \n
 	 
-	strncpy((char *)hsmcfg_line, value, llen);
+	strncpy((char *)hsmcfg_line, value, llen-1);
 
   	val = strtok (hsmcfg_line,",");	
 	if (val != NULL) {
@@ -194,13 +194,13 @@ static bool parse_hsmline(char hsm_path[HSM_PATH_LEN], uint8_t slot, char pin[HS
 	val = strtok (NULL, ",");
 	if (val != NULL) {
 	strncpy(pin, val, HSM_PIN_LEN-1);
-	printf("set pin:%X\n", pin);
+	printf("set pin:%s\n", pin);
 	} else {
 		// user didn't include pin
-		pin = 'A';
+		*pin = 'A';
 	}
 	printf("hsm_line debugging\n");
-	printf("pin:%X\n", pin);
+	printf("pin:%s\n", pin);
 	
 	printf("slot:%X\n", slot);
 
