@@ -160,7 +160,7 @@ out:
 // TODO fix these hacks and make them verify each parameter
 // hsm = /usr/lib/pkcs11/opensc-pkcs11.so, 0, 123456
 // optionally, omit the pin
-static bool parse_hsmline(char hsm_path[HSM_PATH_LEN], uint64_t slot, char pin[HSM_PIN_LEN], const char *value)
+static bool parse_hsmline(char hsm_path[HSM_PATH_LEN], uint64_t* slot, char pin[HSM_PIN_LEN], const char *value)
 {
 	//fprintf(stderr, "Line: %s\n", value);
 
@@ -170,14 +170,14 @@ static bool parse_hsmline(char hsm_path[HSM_PATH_LEN], uint64_t slot, char pin[H
 		i++;
 	}
 	hsm_path[i] = '\0';
-	int rc = sscanf(&value[i], ",%ld,%s", &slot, pin );
+	int rc = sscanf(&value[i], ",%ld,%s", slot, pin );
 	if (rc < 2) {
 		return false;
 	}
 
-	//fprintf(stderr, "Path: %s\n", &hsm_path[0]);
-	//fprintf(stderr, "Slot: %ld\n", slot);
-	//fprintf(stderr, "PIN: %s\n", pin);
+	fprintf(stderr, "Path: %s\n", &hsm_path[0]);
+	fprintf(stderr, "Slot: %ld\n", *slot);
+	fprintf(stderr, "PIN: %s\n", pin);
 	return true;
 }
 
@@ -476,8 +476,8 @@ static bool process_line(struct config_ctx *ctx, const char *line)
 				ctx->device->flags |= WGDEVICE_HAS_PRIVATE_KEY;
 		}
 		else if (key_match("hsm")) {
-			printf("Doing hsm!\n");
-			ret = parse_hsmline(ctx->device->hsm_path, ctx->device->slot, ctx->device->pin, value);
+			printf("Doing hsm: %s\n", line);
+			ret = parse_hsmline(ctx->device->hsm_path, &ctx->device->slot, ctx->device->pin, value);
 			if (ret) {
 				ctx->device->flags |= WGDEVICE_HAS_HSM;
 			}
@@ -620,7 +620,7 @@ struct wgdevice *config_read_cmd(const char *argv[], int argc)
 			argv += 2;
 			argc -= 2;
 		} else if (!strcmp(argv[0], "hsm") && argc >= 2 && !peer) {
-			if (!parse_hsmline(device->hsm_path, device->slot, device->pin, argv[1]))
+			if (!parse_hsmline(device->hsm_path, &device->slot, device->pin, argv[1]))
 				goto error;
 			device->flags |= WGDEVICE_HAS_HSM;
 			argv += 2;
