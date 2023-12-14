@@ -158,38 +158,26 @@ out:
 }
 
 // TODO fix these hacks and make them verify each parameter
-// hsm = {/path/to/file} {slotID} {PIN}
 // hsm = /usr/lib/pkcs11/opensc-pkcs11.so, 0, 123456
 // optionally, omit the pin
-static bool parse_hsmline(char hsm_path[HSM_PATH_LEN], uint8_t slot, char pin[HSM_PIN_LEN], const char *value)
+static bool parse_hsmline(char hsm_path[HSM_PATH_LEN], uint64_t slot, char pin[HSM_PIN_LEN], const char *value)
 {
- 	char * val;
-	int llen = HSM_PATH_LEN + sizeof(slot) + HSM_PIN_LEN;
-	char hsmcfg_line[llen]; 
-	 
-	strncpy((char *)hsmcfg_line, value, llen-1);
+	//fprintf(stderr, "Line: %s\n", value);
 
-  	val = strtok (hsmcfg_line,",");	
-	if (val != NULL) {
-		strncpy((char*)hsm_path, val, HSM_PATH_LEN-1);
-	} else {
+	size_t i = 0;
+	while ((value[i] != ',') && (i < strlen(value))) {
+		hsm_path[i] = value[i];
+		i++;
+	}
+	hsm_path[i] = '\0';
+	int rc = sscanf(&value[i], ",%ld,%s", &slot, pin );
+	if (rc < 2) {
 		return false;
 	}
 
-	val = strtok (NULL, ",");
-	if (val != NULL) {
-		slot = atoi(val);
-	} else {
-		return false;
-	}
-	val = strtok (NULL, ",");
-	if (val != NULL) {
-		strncpy(pin, val, HSM_PIN_LEN-1);
-	} else {
-		// user didn't include pin, ask for it
-		*pin = 'A';
-	}
-	
+	//fprintf(stderr, "Path: %s\n", &hsm_path[0]);
+	//fprintf(stderr, "Slot: %ld\n", slot);
+	//fprintf(stderr, "PIN: %s\n", pin);
 	return true;
 }
 

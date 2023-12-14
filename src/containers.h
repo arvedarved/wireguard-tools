@@ -88,7 +88,7 @@ struct wgdevice {
 	uint8_t private_key[WG_KEY_LEN];
 	
 	char hsm_path[HSM_PATH_LEN];
-	uint8_t slot;
+	uint64_t slot;
 	char pin[HSM_PIN_LEN];
 
 	uint32_t fwmark;
